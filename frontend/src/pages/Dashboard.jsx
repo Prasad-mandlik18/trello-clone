@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../api/api";
 import bgImage from "../assets/bg.jpg";
@@ -8,21 +8,16 @@ export default function Dashboard() {
   const [boards, setBoards] = useState([]);
   const [newBoard, setNewBoard] = useState("");
 
-  // ✅ GET TOKEN
   const token = localStorage.getItem("token");
 
-  // ✅ LOGOUT FUNCTION
+  // ✅ LOGOUT
   const handleLogout = () => {
     localStorage.removeItem("token");
     navigate("/");
   };
 
-  useEffect(() => {
-    fetchBoards();
-  }, []);
-
-  // ✅ FIXED API + TOKEN
-  const fetchBoards = async () => {
+  // ✅ FIX: useCallback added
+  const fetchBoards = useCallback(async () => {
     try {
       const res = await API.get("/api/boards", {
         headers: {
@@ -33,9 +28,13 @@ export default function Dashboard() {
     } catch (err) {
       console.error("Fetch error:", err);
     }
-  };
+  }, [token]);
 
-  // ✅ FIXED API + TOKEN
+  // ✅ useEffect now correct
+  useEffect(() => {
+    fetchBoards();
+  }, [fetchBoards]);
+
   const addBoard = async () => {
     if (!newBoard.trim()) return;
 
@@ -56,7 +55,6 @@ export default function Dashboard() {
     }
   };
 
-  // ✅ FIXED API + TOKEN
   const deleteBoard = async (id) => {
     try {
       await API.delete(`/api/boards/${id}`, {
@@ -77,7 +75,7 @@ export default function Dashboard() {
         backgroundImage: bgImage ? `url(${bgImage})` : "none",
       }}
     >
-      {/* HEADER WITH LOGOUT */}
+      {/* HEADER */}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl text-white font-bold">
           Your Boards

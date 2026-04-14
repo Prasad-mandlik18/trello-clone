@@ -10,12 +10,14 @@ export default function Register() {
 
   const handleRegister = async () => {
     try {
-      await API.post("/auth/register", { email, password });
+      // ✅ FIXED API URL
+      await API.post("/api/auth/register", { email, password });
 
-      alert("Registered!");
+      alert("Registered successfully!");
       navigate("/");
     } catch (err) {
-      alert("Error");
+      console.error(err);
+      alert("Registration failed");
     }
   };
 

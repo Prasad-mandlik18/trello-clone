@@ -10,11 +10,13 @@ export default function Login() {
 
   const handleLogin = async () => {
     try {
-      const res = await API.post("/auth/login", { email, password });
+      // ✅ FIXED API URL
+      const res = await API.post("/api/auth/login", { email, password });
 
       localStorage.setItem("token", res.data.token);
       navigate("/dashboard");
     } catch (err) {
+      console.error(err);
       alert("Login failed");
     }
   };
@@ -22,10 +24,10 @@ export default function Login() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-black">
 
-      {/* 🌌 Background glow */}
+      {/* Background glow */}
       <div className="absolute w-[500px] h-[500px] bg-blue-500 blur-[120px] opacity-30"></div>
 
-      {/* ⚡ Card */}
+      {/* Card */}
       <div className="relative p-[2px] rounded-2xl bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 animate-pulse">
 
         <div className="bg-gray-900 rounded-2xl p-8 w-80">

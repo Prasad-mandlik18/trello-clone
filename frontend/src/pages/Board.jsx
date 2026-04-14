@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   DragDropContext,
@@ -9,7 +9,6 @@ import API from "../api/api";
 import bgImage from "../assets/wallpaper2.jpg";
 
 export default function Board() {
-
   const navigate = useNavigate();
   const { id } = useParams();
 
@@ -24,42 +23,59 @@ export default function Board() {
     navigate("/");
   };
 
- useEffect(() => {
-  fetchTasks();
-  // eslint-disable-next-line
-}, [id]);
+  // ✅ FIXED: fetchTasks with useCallback
+  const fetchTasks = useCallback(async () => {
+    try {
+      const res = await API.get(`/tasks/${id}`);
+      setTasks(res.data);
+    } catch (error) {
+      console.error("Error fetching tasks:", error);
+    }
+  }, [id]);
 
-  const fetchTasks = async () => {
-    const res = await API.get(`/tasks/${id}`);
-    setTasks(res.data);
-  };
+  // ✅ FIXED: useEffect dependency
+  useEffect(() => {
+    fetchTasks();
+  }, [fetchTasks]);
 
   const addTask = async () => {
     if (!newTask.trim()) return;
 
-    await API.post("/tasks", {
-      title: newTask,
-      status: "todo",
-      boardId: id,
-    });
+    try {
+      await API.post("/tasks", {
+        title: newTask,
+        status: "todo",
+        boardId: id,
+      });
 
-    setNewTask("");
-    fetchTasks();
+      setNewTask("");
+      fetchTasks();
+    } catch (error) {
+      console.error("Error adding task:", error);
+    }
   };
 
   const deleteTask = async (taskId) => {
-    await API.delete(`/tasks/${taskId}`);
-    fetchTasks();
+    try {
+      await API.delete(`/tasks/${taskId}`);
+      fetchTasks();
+    } catch (error) {
+      console.error("Error deleting task:", error);
+    }
   };
 
   const onDragEnd = async (result) => {
     if (!result.destination) return;
 
-    await API.put(`/tasks/${result.draggableId}`, {
-      status: result.destination.droppableId,
-    });
+    try {
+      await API.put(`/tasks/${result.draggableId}`, {
+        status: result.destination.droppableId,
+      });
 
-    fetchTasks();
+      fetchTasks();
+    } catch (error) {
+      console.error("Error updating task:", error);
+    }
   };
 
   const getTasks = (status) =>
@@ -72,8 +88,7 @@ export default function Board() {
         backgroundImage: `url(${bgImage})`,
       }}
     >
-
-      {/* ✅ HEADER WITH LOGOUT */}
+      {/* HEADER */}
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-3xl text-white">Board</h2>
 
@@ -105,7 +120,6 @@ export default function Board() {
       {/* DRAG & DROP */}
       <DragDropContext onDragEnd={onDragEnd}>
         <div className="grid grid-cols-3 gap-6">
-
           {columns.map((col) => (
             <Droppable droppableId={col} key={col}>
               {(provided) => (
@@ -151,7 +165,6 @@ export default function Board() {
               )}
             </Droppable>
           ))}
-
         </div>
       </DragDropContext>
     </div>
